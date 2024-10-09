@@ -1,0 +1,9 @@
+INF1018 - Software Básico
+Trabalho 1 - Conversão entre codificações UNICODE
+
+Integrantes:
+Guilherme Ferreira de Ávila - 2311153
+Pedro Carneiro Nogueira - 2310540
+Turma 3WC
+
+
