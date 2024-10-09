@@ -11,7 +11,7 @@ int montaCaracter32(const char* c8, int size);
 int isLittleEndian();
 int toLittleEndian(int value);
 
-/* ------------- Funcao Principai ------------- */
+/* ------------ Funcoes Principais ------------ */
 
 // Função para converter UTF-8 para UTF-32 little-endian com BOM
 int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
@@ -66,6 +66,10 @@ int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
         return -1;
     }
 
+    return 0;
+}
+
+int convUtf32p8(FILE *arquivo_entrada, FILE *arquivo_saida) {
     return 0;
 }
 
