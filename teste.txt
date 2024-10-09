@@ -13,6 +13,7 @@ Funções Implementadas:
 1. convUtf8p32
 Descrição: A função convUtf8p32 lê um arquivo de entrada em UTF-8 e grava um arquivo de saída em UTF-32 little-endian, incluindo o BOM no início.
 Leitura de caracteres UTF-8 de 1 a 4 bytes, conversão para UTF-32 e gravação com BOM.
+Completamente funcional, não achamos erros nos testes.
 
 2. convUtf32p8
 Descrição: ---
