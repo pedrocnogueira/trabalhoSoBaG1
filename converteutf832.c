@@ -1,113 +1,82 @@
-/* Guilherme Ferreira de Ávila - 2311153 */
-/* Pedro Carneiro Nogueira - 2310540 */
-
 #include <stdio.h>
-#include "converteutf832.h"
+#include <stdint.h>
 
-// Funçao que retorna o numero de bytes do caracter, recebendo o primeiro byte
+// Função que retorna o número de bytes de um caractere, dado o primeiro byte
 int numberOfBytes(char primByte) {
-    if (primByte & 0x80 == 0) return 1;
-    if (primByte & 0xE0 == 0xC0) return 2;
-    if (primByte & 0xC0 == 0xE0) return 3;
+    if ((primByte & 0x80) == 0) return 1;
+    if ((primByte & 0xE0) == 0xC0) return 2;
+    if ((primByte & 0xF0) == 0xE0) return 3;
     return 4;
 }
 
-unsigned int montaCaracter32(char* c8, int size) {
+// Função para montar um caractere UTF-32 a partir de um array de bytes UTF-8
+uint32_t montaCaracter32(const char* c8, int size) {
+    uint32_t caracter32 = 0;
 
-    // Testando para o caracter 0
-    if (*c8 == 0) return 0;
-
-    // Mascaras para pegar apenas os bits que vao compor o caracter final
-    unsigned int masks[4] = {0x7f, 0x7f, 0x7f, 0x7f};
-    if (size == 4) {
-        masks[0] = 0xF;
-    } else if (size == 3) {
-        masks[0] = 0x1F;
+    if (size == 1) {
+        caracter32 = c8[0];
     } else if (size == 2) {
-        masks[0] = 0x3F;
-    }
-
-    // Reescreve cada mascara com o conteudo a ser usado
-    for (int i = 0; i < size; i++) {
-        masks[i] = masks[i] & *(c8 + i);
-    }
-
-    // Montando o caracter em 32bits
-    unsigned int caracter32 = 0;
-    switch (size) {
-    case 1:
-        return *c8;
-        break;
-    case 2:
-        caracter32 = masks[0] << 6;
-        caracter32 |= masks[1];
-        break;
-    case 3:
-        caracter32 = masks[0] << 12;
-        caracter32 |= masks[1] << 6;
-        caracter32 |= masks[2];
-        break;
-    default:
-        caracter32 = masks[0] << 18;
-        caracter32 |= masks[1] << 12;
-        caracter32 |= masks[2] << 6;
-        caracter32 |= masks[2];
-        break;
+        caracter32 = ((c8[0] & 0x1F) << 6) | (c8[1] & 0x3F);
+    } else if (size == 3) {
+        caracter32 = ((c8[0] & 0x0F) << 12) | ((c8[1] & 0x3F) << 6) | (c8[2] & 0x3F);
+    } else if (size == 4) {
+        caracter32 = ((c8[0] & 0x07) << 18) | ((c8[1] & 0x3F) << 12) | ((c8[2] & 0x3F) << 6) | (c8[3] & 0x3F);
     }
 
     return caracter32;
 }
 
+// Função para converter UTF-8 para UTF-32 little-endian com BOM
 int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
-
-    // Testando se o arquivo de entrada é nulo
+    // Verifica se o arquivo de entrada é nulo
     if (!arquivo_entrada) {
-        fprintf(stderr, "Arquivo de entrada nulo.");
+        fprintf(stderr, "Erro: Arquivo de entrada nulo.\n");
         return -1;
     }
 
-    // Testando se o arquivo de saida é nulo
+    // Verifica se o arquivo de saída é nulo
     if (!arquivo_saida) {
-        fprintf(stderr, "Arquivo de saida nulo.");
+        fprintf(stderr, "Erro: Arquivo de saída nulo.\n");
         return -1;
     }
 
-    // Escrevendo o caractere BOM no inicio do arquivo
-    int BOM = 0xFFFE0000;
-    if (fprintf(arquivo_saida, BOM) < 0) {
-        fprintf(stderr, "Erro na escrita do caracter BOM.");
+    // Escreve o BOM (Byte Order Mark) para UTF-32 little-endian
+    uint32_t bom = 0x0000FEFF;
+    if (fwrite(&bom, sizeof(bom), 1, arquivo_saida) != 1) {
+        fprintf(stderr, "Erro na escrita do BOM no arquivo de saída.\n");
         return -1;
     }
 
-    // Array de char que terá todos os bytes de cada caracter (1 a 4) e caracter a ser construido
-    char caracter[4] = {0, 0, 0, 0};
-    unsigned int caracter32;
+    char caracter[4];
+    size_t bytesRead;
+    uint32_t caracter32;
 
-    while(!feof(arquivo_entrada)) {
-        // Le o primeiro byte do caracter e coloca na posição 0 do array
-        if (!fread(&caracter[0], 1, 1, arquivo_entrada)) {
-            fprintf(stderr, "Erro na leitura do arquivo.");
-            return -1;
-        }
-
-        // Quantidade de bytes do caracter que está sendo lido
+    // Lê cada caractere do arquivo de entrada UTF-8
+    while ((bytesRead = fread(&caracter[0], 1, 1, arquivo_entrada)) == 1) {
         int qtdBytes = numberOfBytes(caracter[0]);
 
-        // Le o restante dos bytes, se necessário
-        if (qtdBytes != 1) {
-            if (!fread(&caracter[1], 1, (qtdBytes - 1), arquivo_entrada)) {
-                fprintf(stderr, "Erro na leitura do arquivo.");
+        // Lê os bytes restantes do caractere UTF-8, se necessário
+        if (qtdBytes > 1) {
+            if (fread(&caracter[1], 1, qtdBytes - 1, arquivo_entrada) != qtdBytes - 1) {
+                fprintf(stderr, "Erro na leitura do arquivo de entrada.\n");
+                return -1;
             }
         }
 
-        // Usa o array de bytes para montar o caracter final
+        // Converte o caractere UTF-8 para UTF-32
         caracter32 = montaCaracter32(caracter, qtdBytes);
 
-        // Escreve o caracter convertido no arquivo de saida
-        if (fprintf(arquivo_saida, caracter32) < 0) {
-            fprintf(stderr, "Erro na escrita do arquivo.");
+        // Escreve o caractere UTF-32 no arquivo de saída em formato little-endian
+        if (fwrite(&caracter32, sizeof(caracter32), 1, arquivo_saida) != 1) {
+            fprintf(stderr, "Erro na escrita no arquivo de saída.\n");
             return -1;
         }
+    }
+
+    // Verifica se houve algum erro na leitura do arquivo de entrada
+    if (ferror(arquivo_entrada)) {
+        fprintf(stderr, "Erro na leitura do arquivo de entrada.\n");
+        return -1;
     }
 
     return 0;
