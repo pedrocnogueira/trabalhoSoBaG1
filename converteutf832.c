@@ -1,33 +1,17 @@
+/* Guilherme Ferreira de Ávila - 2311153 */
+/* Pedro Carneiro Nogueira - 2310540 */
+
 #include <stdio.h>
 #include <stdint.h>
 
-// Função que retorna o número de bytes de um caractere, dado o primeiro byte
-int numberOfBytes(char primByte) {
-    if ((primByte & 0x80) == 0) return 1;
-    if ((primByte & 0xE0) == 0xC0) return 2;
-    if ((primByte & 0xF0) == 0xE0) return 3;
-    return 4;
-}
+/* ----- Protoripos de Funcoes Auxiliares ----- */
 
-// Função para montar um caractere UTF-32 a partir de um array de bytes UTF-8
-// Os & aplicam uma máscara para pegar apenas os bits que serao inclusos no caractere final
-// Os << ajeitam esse números na posição que eles ficarão no caractere final
-// Os | juntam cada um desses pedacos no caracter final
-uint32_t montaCaracter32(const char* c8, int size) {
-    uint32_t caracter32 = 0;
+int numberOfBytes(char primByte);
+uint32_t montaCaracter32(const char* c8, int size);
+int isLittleEndian();
+uint32_t toLittleEndian(uint32_t value);
 
-    if (size == 1) {
-        caracter32 = c8[0];
-    } else if (size == 2) {
-        caracter32 = ((c8[0] & 0x1F) << 6) | (c8[1] & 0x3F);
-    } else if (size == 3) {
-        caracter32 = ((c8[0] & 0x0F) << 12) | ((c8[1] & 0x3F) << 6) | (c8[2] & 0x3F);
-    } else if (size == 4) {
-        caracter32 = ((c8[0] & 0x07) << 18) | ((c8[1] & 0x3F) << 12) | ((c8[2] & 0x3F) << 6) | (c8[3] & 0x3F);
-    }
-
-    return caracter32;
-}
+/* ------------- Funcao Principai ------------- */
 
 // Função para converter UTF-8 para UTF-32 little-endian com BOM
 int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
@@ -83,4 +67,51 @@ int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
     }
 
     return 0;
+}
+
+/* ------------ Funcoes Auxiliares ------------ */
+
+// Função para verificar se a arquitetura do sistema é little-endian
+int isLittleEndian() {
+    unsigned int test = 0x1;
+    char* c = (char*)&test;
+    return *c == 0x1;
+}
+
+// Função para converter um valor de 32 bits para little-endian, se necessário
+uint32_t toLittleEndian(uint32_t value) {
+    // Se o sistema for big-endian, faça a conversão para little-endian
+    value = ((value & 0xFF000000) >> 24) |
+            ((value & 0x00FF0000) >> 8) |
+            ((value & 0x0000FF00) << 8) |
+            ((value & 0x000000FF) << 24);
+    return value;
+}
+
+// Função que retorna o número de bytes de um caractere, dado o primeiro byte
+int numberOfBytes(char primByte) {
+    if ((primByte & 0x80) == 0) return 1;
+    if ((primByte & 0xE0) == 0xC0) return 2;
+    if ((primByte & 0xF0) == 0xE0) return 3;
+    return 4;
+}
+
+// Função para montar um caractere UTF-32 a partir de um array de bytes UTF-8
+// Os & aplicam uma máscara para pegar apenas os bits que serao inclusos no caractere final
+// Os << ajeitam esse números na posição que eles ficarão no caractere final
+// Os | juntam cada um desses pedacos no caracter final
+uint32_t montaCaracter32(const char* c8, int size) {
+    uint32_t caracter32 = 0;
+
+    if (size == 1) {
+        caracter32 = c8[0];
+    } else if (size == 2) {
+        caracter32 = ((c8[0] & 0x1F) << 6) | (c8[1] & 0x3F);
+    } else if (size == 3) {
+        caracter32 = ((c8[0] & 0x0F) << 12) | ((c8[1] & 0x3F) << 6) | (c8[2] & 0x3F);
+    } else if (size == 4) {
+        caracter32 = ((c8[0] & 0x07) << 18) | ((c8[1] & 0x3F) << 12) | ((c8[2] & 0x3F) << 6) | (c8[3] & 0x3F);
+    }
+
+    return caracter32;
 }
