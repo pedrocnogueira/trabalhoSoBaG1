@@ -7,9 +7,9 @@
 /* ----- Protoripos de Funcoes Auxiliares ----- */
 
 int numberOfBytes(char primByte);
-uint32_t montaCaracter32(const char* c8, int size);
+int montaCaracter32(const char* c8, int size);
 int isLittleEndian();
-uint32_t toLittleEndian(uint32_t value);
+int toLittleEndian(int value);
 
 /* ------------- Funcao Principai ------------- */
 
@@ -28,7 +28,7 @@ int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
     }
 
     // Escreve o BOM (Byte Order Mark) para UTF-32 little-endian
-    uint32_t bom = 0x0000FEFF;
+    int bom = 0x0000FEFF;
     if (fwrite(&bom, sizeof(bom), 1, arquivo_saida) != 1) {
         fprintf(stderr, "Erro na escrita do BOM no arquivo de saída.\n");
         return -1;
@@ -36,7 +36,7 @@ int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
 
     char caracter[4];
     size_t bytesRead;
-    uint32_t caracter32;
+    int caracter32;
 
     // Lê cada caractere do arquivo de entrada UTF-8
     while ((bytesRead = fread(&caracter[0], 1, 1, arquivo_entrada)) == 1) {
@@ -79,7 +79,7 @@ int isLittleEndian() {
 }
 
 // Função para converter um valor de 32 bits para little-endian, se necessário
-uint32_t toLittleEndian(uint32_t value) {
+int toLittleEndian(int value) {
     // Se o sistema for big-endian, faça a conversão para little-endian
     value = ((value & 0xFF000000) >> 24) |
             ((value & 0x00FF0000) >> 8) |
@@ -100,8 +100,8 @@ int numberOfBytes(char primByte) {
 // Os & aplicam uma máscara para pegar apenas os bits que serao inclusos no caractere final
 // Os << ajeitam esse números na posição que eles ficarão no caractere final
 // Os | juntam cada um desses pedacos no caracter final
-uint32_t montaCaracter32(const char* c8, int size) {
-    uint32_t caracter32 = 0;
+int montaCaracter32(const char* c8, int size) {
+    int caracter32 = 0;
 
     if (size == 1) {
         caracter32 = c8[0];
