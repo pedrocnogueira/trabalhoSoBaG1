@@ -10,6 +10,9 @@ int numberOfBytes(char primByte) {
 }
 
 // Função para montar um caractere UTF-32 a partir de um array de bytes UTF-8
+// Os & aplicam uma máscara para pegar apenas os bits que serao inclusos no caractere final
+// Os << ajeitam esse números na posição que eles ficarão no caractere final
+// Os | juntam cada um desses pedacos no caracter final
 uint32_t montaCaracter32(const char* c8, int size) {
     uint32_t caracter32 = 0;
 
