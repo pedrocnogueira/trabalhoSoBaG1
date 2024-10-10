@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "converteutf832.h"
 
 int main() {
     // Arquivos para teste
-    FILE *arquivoEntradaUtf8 = fopen("entrada_utf8.txt", "rb");
-    FILE *arquivoSaidaUtf32 = fopen("saida_utf32.txt", "wb");
-    FILE *arquivoSaidaUtf8Final = fopen("saida_utf8_final.txt", "wb");
+    FILE *arquivoEntradaUtf8 = fopen("testes/entrada_utf8.txt", "rb");
+    FILE *arquivoSaidaUtf32 = fopen("testes/saida_utf32.txt", "wb");
+    FILE *arquivoSaidaUtf8Final = fopen("testes/saida_utf8_final.txt", "wb");
 
     // Verifica se os arquivos foram abertos corretamente
     if (!arquivoEntradaUtf8) {
@@ -32,7 +33,7 @@ int main() {
     fclose(arquivoSaidaUtf32);
 
     // Abre o arquivo UTF-32 gerado para a conversão de volta para UTF-8
-    arquivoSaidaUtf32 = fopen("saida_utf32.txt", "rb");
+    arquivoSaidaUtf32 = fopen("testes/saida_utf32.txt", "rb");
     if (!arquivoSaidaUtf32) {
         fprintf(stderr, "Erro: Não foi possível abrir o arquivo de saída UTF-32.\n");
         return 1;
