@@ -11,45 +11,45 @@
 
 int numeroDeBytes(char primeiroByte);
 int montarCaractere32(const char* c8, int tamanho);
-int numeroDeBytesNecessarios(uint32_t caractere32);
-void montarCaractere8(uint32_t caractere32, unsigned char* c8, int isLittleEndian);
+int numeroDeBytesNecessarios(int caractere32);
+void montarCaractere8(int caractere32, unsigned char* c8, int isLittleEndian);
 int verificarEndianidade();
-uint32_t inverterEndianidade(uint32_t valor);
+int inverterEndianidade(int valor);
 
 /* ------------ Funções Principais ------------ */
 
 // Função para converter UTF-8 para UTF-32 little-endian com BOM
-int convUtf8p32(FILE *arquivoEntrada, FILE *arquivoSaida) {
+int convUtf8p32(FILE *arquivo_entrada, FILE *arquivo_saida) {
     // Verifica se o arquivo de entrada é nulo
-    if (!arquivoEntrada) {
+    if (!arquivo_entrada) {
         fprintf(stderr, "Erro: Arquivo de entrada nulo.\n");
         return -1;
     }
 
     // Verifica se o arquivo de saída é nulo
-    if (!arquivoSaida) {
+    if (!arquivo_saida) {
         fprintf(stderr, "Erro: Arquivo de saída nulo.\n");
         return -1;
     }
 
     // Escreve o BOM (Byte Order Mark) para UTF-32 little-endian
-    uint32_t bom = BOM_LITTLE;
-    if (fwrite(&bom, sizeof(bom), 1, arquivoSaida) != 1) {
+    int bom = BOM_LITTLE;
+    if (fwrite(&bom, sizeof(bom), 1, arquivo_saida) != 1) {
         fprintf(stderr, "Erro na escrita do BOM no arquivo de saída.\n");
         return -1;
     }
 
     char caractere[4];
-    size_t bytesLidos;
-    uint32_t caractere32;
+    int bytesLidos;
+    int caractere32;
 
     // Lê cada caractere do arquivo de entrada UTF-8
-    while ((bytesLidos = fread(&caractere[0], 1, 1, arquivoEntrada)) == 1) {
+    while ((bytesLidos = fread(&caractere[0], 1, 1, arquivo_entrada)) == 1) {
         int qtdBytes = numeroDeBytes(caractere[0]);
 
         // Lê os bytes restantes do caractere UTF-8, se necessário
         if (qtdBytes > 1) {
-            if (fread(&caractere[1], 1, qtdBytes - 1, arquivoEntrada) != qtdBytes - 1) {
+            if (fread(&caractere[1], 1, qtdBytes - 1, arquivo_entrada) != qtdBytes - 1) {
                 fprintf(stderr, "Erro na leitura do arquivo de entrada.\n");
                 return -1;
             }
@@ -59,14 +59,14 @@ int convUtf8p32(FILE *arquivoEntrada, FILE *arquivoSaida) {
         caractere32 = montarCaractere32(caractere, qtdBytes);
 
         // Escreve o caractere UTF-32 no arquivo de saída em formato little-endian
-        if (fwrite(&caractere32, sizeof(caractere32), 1, arquivoSaida) != 1) {
+        if (fwrite(&caractere32, sizeof(caractere32), 1, arquivo_saida) != 1) {
             fprintf(stderr, "Erro na escrita no arquivo de saída.\n");
             return -1;
         }
     }
 
     // Verifica se houve algum erro na leitura do arquivo de entrada
-    if (ferror(arquivoEntrada)) {
+    if (ferror(arquivo_entrada)) {
         fprintf(stderr, "Erro na leitura do arquivo de entrada.\n");
         return -1;
     }
@@ -75,23 +75,23 @@ int convUtf8p32(FILE *arquivoEntrada, FILE *arquivoSaida) {
 }
 
 // Função para converter UTF-32 para UTF-8
-int convUtf32p8(FILE *arquivoEntrada, FILE *arquivoSaida) {
+int convUtf32p8(FILE *arquivo_entrada, FILE *arquivo_saida) {
     // Verifica se o arquivo de entrada é nulo
-    if (!arquivoEntrada) {
+    if (!arquivo_entrada) {
         fprintf(stderr, "Erro: Arquivo de entrada nulo.\n");
         return -1;
     }
 
     // Verifica se o arquivo de saída é nulo
-    if (!arquivoSaida) {
+    if (!arquivo_saida) {
         fprintf(stderr, "Erro: Arquivo de saída nulo.\n");
         return -1;
     }
 
-    uint32_t bom;
+    int bom;
 
     // Lê e valida o BOM do arquivo UTF-32
-    if (fread(&bom, sizeof(bom), 1, arquivoEntrada) != 1) {
+    if (fread(&bom, sizeof(bom), 1, arquivo_entrada) != 1) {
         fprintf(stderr, "Erro na leitura do caractere BOM.\n");
         return -1;
     } else if (bom != BOM_BIG && bom != BOM_LITTLE) {
@@ -100,14 +100,14 @@ int convUtf32p8(FILE *arquivoEntrada, FILE *arquivoSaida) {
     }
 
     int isLittleEndian = (bom == BOM_LITTLE);
-    uint32_t caractere32;
+    int caractere32;
     unsigned char caractere8[4] = {0, 0, 0, 0};
 
     // Lê cada caractere UTF-32 do arquivo de entrada
-    while (fread(&caractere32, sizeof(caractere32), 1, arquivoEntrada) == 1) {
+    while (fread(&caractere32, sizeof(caractere32), 1, arquivo_entrada) == 1) {
         montarCaractere8(caractere32, caractere8, isLittleEndian);
         int qtdBytesSaida = numeroDeBytesNecessarios(caractere32);
-        if (fwrite(caractere8, 1, qtdBytesSaida, arquivoSaida) != qtdBytesSaida) {
+        if (fwrite(caractere8, 1, qtdBytesSaida, arquivo_saida) != qtdBytesSaida) {
             fprintf(stderr, "Erro na escrita do arquivo de saída.\n");
             return -1;
         }
@@ -126,7 +126,7 @@ int verificarEndianidade() {
 }
 
 // Função para inverter a endianidade de um valor de 32 bits
-uint32_t inverterEndianidade(uint32_t valor) {
+int inverterEndianidade(int valor) {
     return ((valor & 0xFF000000) >> 24) |
            ((valor & 0x00FF0000) >> 8) |
            ((valor & 0x0000FF00) << 8) |
@@ -159,7 +159,7 @@ int montarCaractere32(const char* c8, int tamanho) {
 }
 
 // Função que calcula o número de bytes necessários para representar um caractere em UTF-8
-int numeroDeBytesNecessarios(uint32_t caractere32) {
+int numeroDeBytesNecessarios(int caractere32) {
     if (caractere32 <= 0x7F) {
         return 1;
     } else if (caractere32 <= 0x7FF) {
@@ -172,7 +172,7 @@ int numeroDeBytesNecessarios(uint32_t caractere32) {
 }
 
 // Função para converter um caractere UTF-32 em UTF-8, levando em conta a endianidade
-void montarCaractere8(uint32_t caractere32, unsigned char* c8, int isLittleEndian) {
+void montarCaractere8(int caractere32, unsigned char* c8, int isLittleEndian) {
     int numBytes = numeroDeBytesNecessarios(caractere32);
 
     if (isLittleEndian != verificarEndianidade()) {
