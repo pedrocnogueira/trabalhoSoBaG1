@@ -9,12 +9,14 @@
 
 /* ----- Protótipos de Funções Auxiliares ----- */
 
-int numeroDeBytes(char primeiroByte);
-int montarCaractere32(const char* c8, int tamanho);
-int numeroDeBytesNecessarios(int caractere32);
-void montarCaractere8(int caractere32, unsigned char* c8, int isLittleEndian);
 int verificarEndianidade();
 int inverterEndianidade(int valor);
+
+int numeroDeBytes(char primeiroByte);
+int montarCaractere32(const char* c8, int tamanho);
+
+int numeroDeBytesNecessarios(int caractere32);
+void montarCaractere8(int caractere32, unsigned char* c8, int isLittleEndian);
 
 /* ------------ Funções Principais ------------ */
 
