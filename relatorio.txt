@@ -1,30 +1,44 @@
-INF1018 - Software Básico (2024.2)
-Primeiro Trabalho: Conversão entre codificações UNICODE
+Relatório: Conversão entre Codificações UTF-8 e UTF-32
 
-Integrantes do Grupo:
-- Guilherme Ferreira de Ávila - Matrícula: 2311153
-- Pedro Carneiro Nogueira - Matrícula: 2310540
+Autores:
+Guilherme Ferreira de Ávila - 2311153
+Pedro Carneiro Nogueira - 2310540
 
-Objetivo do Trabalho:
-Implementar as funções convUtf8p32 e convUtf32p8 em C para realizar a conversão de texto entre as codificações UNICODE UTF-8 e UTF-32.
+Objetivo:
+Este trabalho tem como objetivo implementar duas funções em linguagem C, convUtf8p32 e convUtf32p8, que realizam a conversão de arquivos de texto entre as codificações UNICODE UTF-8 e UTF-32.
 
-Funções Implementadas:
 
-1. convUtf8p32
-Descrição: A função convUtf8p32 lê um arquivo de entrada em UTF-8 e grava um arquivo de saída em UTF-32 little-endian, incluindo o BOM no início.
-Leitura de caracteres UTF-8 de 1 a 4 bytes, conversão para UTF-32 e gravação com BOM.
-Completamente funcional, não achamos erros nos testes.
+Descrição das Funções Implementadas:
+1. Função convUtf8p32
+A função convUtf8p32 lê um arquivo de entrada codificado em UTF-8 e gera um arquivo de saída codificado em UTF-32 no formato little-endian, incluindo o BOM (Byte Order Mark) no início do arquivo de saída.
 
-- Funções Auxiliares:
-numberOfBytes: usa o primeiro byte do caractere atual para definir quantos bytes o caractere tem.
-montaCaractere32: recebe o ponteiro para o array de bytes e monta o caractere final de 32 bits.
-isLittleEndian: testa e retorna true se o sistema fo little endian, retorna false caso contrário.
-toLittleEndian: passa um int de 32 bytes para little endian, invertendo a ordem dos bytes.
+O que funcionou nessa função:
+Leitura do arquivo UTF-8: A função lê cada caractere do arquivo de entrada e, com base no primeiro byte do caractere, determina quantos bytes formam o caractere completo em UTF-8.
+Conversão para UTF-32: O caractere UTF-8 é convertido em UTF-32, armazenando o valor do código em um inteiro de 32 bits.
+Escrita no arquivo UTF-32: O caractere UTF-32 é escrito no arquivo de saída em formato little-endian, precedido pelo BOM.
 
-2. convUtf32p8
-Descrição: ---
+2. Função convUtf32p8
+A função convUtf32p8 lê um arquivo de entrada codificado em UTF-32 (com BOM) e gera um arquivo de saída codificado em UTF-8. A função verifica se o BOM do arquivo de entrada é válido (big-endian ou little-endian) e realiza a conversão adequadamente.
 
-Testes Realizados:
-- Testes com arquivos UTF-8, incluindo caracteres ASCII, acentuados e emojis, mostraram que convUtf8p32 converte corretamente para UTF-32 little-endian.
-- Verificação do BOM no arquivo de saída UTF-32 mostrou que ele é gravado como 0x0000FEFF no formato esperado.
-- Análise com hexdump confirmou a ordem correta dos bytes no arquivo de saída.
+O que funcionou nessa função:
+Validação do BOM: A função lê os primeiros 4 bytes do arquivo de entrada e verifica se contêm um BOM válido. Caso o BOM seja inválido, a função emite uma mensagem de erro e interrompe a execução.
+Leitura do arquivo UTF-32: A função lê cada caractere de 32 bits do arquivo de entrada e o converte para UTF-8.
+Escrita no arquivo UTF-8: Os caracteres UTF-8 são gravados no arquivo de saída sem o BOM.
+
+Funções Auxiliares:
+Foram implementadas diversas funções auxiliares para facilitar a conversão, como numeroDeBytes (que determina o número de bytes que um caractere UTF-8 ocupa), montarCaractere32 (que converte UTF-8 para UTF-32), numeroDeBytesNecessarios (que calcula o número de bytes necessários para representar um caractere em UTF-8), montarCaractere8 (que converte UTF-32 para UTF-8) e inverterEndianidade (que inverte a endianidade de um valor de 32 bits, caso necessário).
+
+
+
+Realizamos diferentes textes para verificar nossas funções, executando a conversão de UTF-8 para UTF-32 e vice-versa, gerando arquivos txt como output para verificação dos resultados.
+
+O que está funcionando:
+Conversão UTF-8 para UTF-32 little-endian: A função convUtf8p32 está funcionando corretamente, realizando a leitura dos caracteres UTF-8, convertendo-os para UTF-32 e gravando o resultado no arquivo de saída com o BOM inicial. A leitura de arquivos de entrada sem erros de codificação funciona conforme o esperado.
+Conversão UTF-32 para UTF-8: A função convUtf32p8 também funciona corretamente, realizando a leitura de arquivos UTF-32, verificando a endianidade com base no BOM, e convertendo os caracteres para UTF-8. O arquivo de saída é gerado corretamente sem o BOM, como especificado.
+
+O que não está funcionando:
+Até o momento, todas as funcionalidades solicitadas no enunciado estão funcionando conforme o esperado. Não foram encontrados erros de execução ou problemas na conversão entre as codificações.
+
+Conclusão:
+O código desenvolvido atendeu aos requisitos propostos no enunciado. As funções implementadas permitem a conversão correta entre as codificações UTF-8 e UTF-32, levando em consideração a endianidade e o uso de BOM quando necessário. Foram utilizadas técnicas de manipulação de arquivos binários e operações bit a bit para garantir a conversão precisa entre os formatos.
+
