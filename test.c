@@ -28,7 +28,7 @@ int main() {
         return 1;
     }
 
-    // Fecha os arquivos usados para a primeira conversão
+    // // Fecha os arquivos usados para a primeira conversão
     fclose(arquivoEntradaUtf8);
     fclose(arquivoSaidaUtf32);
 
